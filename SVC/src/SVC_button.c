@@ -143,7 +143,6 @@ static void process_button_pressed_state(ButtonEvent* const current_event, const
     if (new_event != *current_event) {
         *current_event = new_event;
         LEDEvent event_to_be_sent;
-        configASSERT(allocd_event);
 
         switch (*current_event) {
         case EVENT_SHORT:
@@ -171,7 +170,6 @@ static void process_button_pressed_state(ButtonEvent* const current_event, const
 
         default:
         	printf("[%s] Unrecognized event 0x%x\n", BUTTON_TASK_NAME, *current_event);
-        	vPortFree(allocd_event);
             break;
         }
     }
