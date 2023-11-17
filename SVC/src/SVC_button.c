@@ -142,34 +142,43 @@ static void process_button_pressed_state(ButtonEvent* const current_event, const
     // when there is a difference with the previous one.
     if (new_event != *current_event) {
         *current_event = new_event;
-        LEDEvent event_to_be_sent;
+        LEDEvent* event_to_be_sent = NULL;
 
         switch (*current_event) {
         case EVENT_SHORT:
             printf("[%s] Detected SHORT press\n", BUTTON_TASK_NAME);
-            event_to_be_sent.type = LED_EVENT_TOGGLE;
-            event_to_be_sent.led = LED_GREEN;
-            led_ao_send_event(&ao_led, &event_to_be_sent);
+            event_to_be_sent = pvPortMalloc(sizeof(LEDEvent));
+            configASSERT(event_to_be_sent);
+            event_to_be_sent->type = LED_EVENT_TOGGLE;
+            event_to_be_sent->led = LED_GREEN;
+            led_ao_send_event(&ao_led, event_to_be_sent);
             break;
 
         case EVENT_LONG:
             printf("[%s] Detected LONG press\n", BUTTON_TASK_NAME);
-            event_to_be_sent.type = LED_EVENT_TOGGLE;
-            event_to_be_sent.led = LED_RED;
-            led_ao_send_event(&ao_led, &event_to_be_sent);
+            event_to_be_sent = pvPortMalloc(sizeof(LEDEvent));
+            configASSERT(event_to_be_sent);
+            event_to_be_sent->type = LED_EVENT_TOGGLE;
+            event_to_be_sent->led = LED_RED;
+            led_ao_send_event(&ao_led, event_to_be_sent);
             break;
 
         case EVENT_BLOCKED:
             printf("[%s] Detected BLOCKED press\n", BUTTON_TASK_NAME);
-            event_to_be_sent.type = LED_EVENT_ON;
-            event_to_be_sent.led = LED_RED;
-            led_ao_send_event(&ao_led, &event_to_be_sent);
-            event_to_be_sent.led = LED_GREEN;
-            led_ao_send_event(&ao_led, &event_to_be_sent);
+            event_to_be_sent = pvPortMalloc(sizeof(LEDEvent));
+            configASSERT(event_to_be_sent);
+            event_to_be_sent->type = LED_EVENT_ON;
+            event_to_be_sent->led = LED_RED;
+            led_ao_send_event(&ao_led, event_to_be_sent);
+
+            event_to_be_sent = pvPortMalloc(sizeof(LEDEvent));
+            configASSERT(event_to_be_sent);
+            event_to_be_sent->type = LED_EVENT_ON;
+            event_to_be_sent->led = LED_GREEN;
+            led_ao_send_event(&ao_led, event_to_be_sent);
             break;
 
         default:
-        	printf("[%s] Unrecognized event 0x%x\n", BUTTON_TASK_NAME, *current_event);
             break;
         }
     }
@@ -177,8 +186,7 @@ static void process_button_pressed_state(ButtonEvent* const current_event, const
 
 static void process_button_released_state(ButtonEvent* const current_event)
 {
-    LEDEvent event_to_be_sent;
-
+	LEDEvent* event_to_be_sent = NULL;
     printf("[%s] Button Released\n", pcTaskGetName(NULL));
 
     switch (*current_event) {
@@ -190,11 +198,17 @@ static void process_button_released_state(ButtonEvent* const current_event)
 
     case EVENT_BLOCKED:
         // As per design, only turn off the LEDs when the current state is BLOCKED
-        event_to_be_sent.type = LED_EVENT_OFF;
-        event_to_be_sent.led = LED_RED;
-        led_ao_send_event(&ao_led, &event_to_be_sent);
-        event_to_be_sent.led = LED_GREEN;
-        led_ao_send_event(&ao_led, &event_to_be_sent);
+    	event_to_be_sent = pvPortMalloc(sizeof(LEDEvent));
+    	configASSERT(event_to_be_sent);
+        event_to_be_sent->type = LED_EVENT_OFF;
+        event_to_be_sent->led = LED_RED;
+        led_ao_send_event(&ao_led, event_to_be_sent);
+
+    	event_to_be_sent = pvPortMalloc(sizeof(LEDEvent));
+    	configASSERT(event_to_be_sent);
+        event_to_be_sent->type = LED_EVENT_OFF;
+        event_to_be_sent->led = LED_GREEN;
+        led_ao_send_event(&ao_led, event_to_be_sent);
         break;
 
     default:
