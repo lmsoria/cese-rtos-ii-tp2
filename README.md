@@ -1,2 +1,2 @@
-# cese-rtos-ii-tp1
-Trabajo Práctico 1 de la materia RTOS II - CESE
+# cese-rtos-ii-tp2
+Trabajo Práctico 2 de la materia RTOS II - CESE
