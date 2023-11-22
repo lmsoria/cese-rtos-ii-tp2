@@ -32,7 +32,7 @@ static void ao_led_task(void* parameters)
     printf("[%s] Task Created\n", pcTaskGetName(NULL));
 
     while (1) {
-        if (xQueueReceive(AO->queue, &event, portMAX_DELAY) == pdPASS) {
+        if (xQueueReceive(AO->queue, &event, portMAX_DELAY) == pdPASS && event) {
             execute_event(event);
         	vPortFree(event);
         }
