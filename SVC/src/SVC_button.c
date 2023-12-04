@@ -46,11 +46,13 @@ extern memory_pool_t* const MEMPOOL;
 /// Structure that will hold the TCB of the task being created.
 static StaticTask_t button_task_buffer;
 
-///Buffer that the task being created will use as its stack.
+/// Buffer that the task being created will use as its stack.
 static StackType_t button_task_stack[BUTTON_TASK_STACK_SIZE];
 
 /// | Private function prototypes -----------------------------------------------
 
+/// @brief Button task. It will monitor the button every ms.
+/// @param unused
 static void task_button(void* unused);
 
 /// @brief Process the "button pressed" action, which happens whenever the Debouncer is at DEBOUNCER_STATE_WAIT_RELEASE state.
@@ -64,6 +66,10 @@ static void process_button_pressed_state(ButtonEvent* const current_event, const
 /// @param current_event current ButtonEvent. The function won't modify its content.
 static void process_button_released_state(ButtonEvent* const current_event);
 
+/// @brief Try to allocate a block from the memory pool and send an event to the LED's Active Object.
+///        This function relies on knowing about the LED service.
+/// @param event_id type of event to send
+/// @param led led to modify
 static void send_event(LEDEventType event_id, ApplicationLEDs led);
 
 /// | Private functions ---------------------------------------------------------

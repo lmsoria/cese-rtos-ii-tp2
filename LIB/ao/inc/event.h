@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 
-/// @brief Common structure that represents the data passed to a task when an event occurs 
+/// @brief Common structure that represents the data passed to a task when an event occurs
 typedef struct
 {
 	uint32_t id;            ///< The ID of the event, defined by the services.

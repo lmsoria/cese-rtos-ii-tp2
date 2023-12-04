@@ -19,12 +19,12 @@ typedef struct
 	// Queue section
 	QueueHandle_t queue_handle;
 	StaticQueue_t* queue_structure;             ///< Event Queue.
-	uint8_t* queue_storage_area;                ///<
+	uint8_t* queue_storage_area;                ///< Event Queue memory area. Must be provided by the service.
 	// Task section
-    TaskHandle_t task_handle;                   ///< Handle of the queue reception task
-    StaticTask_t task_control_block;            ///<
-    StackType_t* task_stack;                    ///<
-    uint32_t task_stack_size;                   ///<
+    TaskHandle_t task_handle;                   ///< Handle of the queue reception task (QRT)
+    StaticTask_t task_control_block;            ///< QRT control block. Must be provided by the service.
+    StackType_t* task_stack;                    ///< QRT stack. Must be provided by the service.
+    uint32_t task_stack_size;                   ///< QRT stack size. Must be provided by the service.
     // Dispatch section
     dispatch_event_handler_t dispatch_function; ///< Callback that will be triggered on each event reception.
 } ActiveObject;
