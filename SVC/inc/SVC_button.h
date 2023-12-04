@@ -1,4 +1,5 @@
 #pragma once
+#include <stdbool.h>
 
 /// @brief Events to be detected by the button task
 typedef enum
@@ -9,6 +10,4 @@ typedef enum
     EVENT_BLOCKED ///< Detected when the button is being pressed in the range >= EVENT_BLOCKED_THRESHOLD_MIN_MS
 } ButtonEvent;
 
-void task_button(void* parameters);
-
-void svc_button_initialize();
+bool svc_button_initialize();
