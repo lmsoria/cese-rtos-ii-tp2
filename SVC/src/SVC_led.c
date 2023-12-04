@@ -8,8 +8,18 @@
 
 /// | Private typedef -----------------------------------------------------------
 /// | Private define ------------------------------------------------------------
+
+#define LED_TASK_STACK_SIZE 200
+
 /// | Private macro -------------------------------------------------------------
 /// | Private variables ---------------------------------------------------------
+
+/// Structure that will hold the TCB of the task being created.
+static StaticTask_t led_task_buffer;
+
+///Buffer that the task being created will use as its stack.
+static StackType_t led_task_stack[LED_TASK_STACK_SIZE];
+
 /// | Private function prototypes -----------------------------------------------
 
 /// @brief Process events received on the AO queue
@@ -20,6 +30,9 @@ static void svc_led_dispatch_event(uint32_t event_type, void* target_led);
 
 bool svc_led_initialize(ActiveObject* const ao, const char* ao_task_name)
 {
+	ao->task_control_block = led_task_buffer;
+	ao->task_stack = led_task_stack;
+	ao->task_stack_size = LED_TASK_STACK_SIZE;
 	return ao_initialize(ao, ao_task_name, svc_led_dispatch_event);
 }
 

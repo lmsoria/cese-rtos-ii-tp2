@@ -25,8 +25,6 @@ static void ao_task(void* parameters)
 
 bool ao_initialize(ActiveObject* const ao, const char* task_name, dispatch_event_handler_t handler)
 {
-    BaseType_t ret;
-
     if(ao == NULL) {
     	printf("[AO] Received NULL AO\n");
     	return false;
@@ -39,15 +37,16 @@ bool ao_initialize(ActiveObject* const ao, const char* task_name, dispatch_event
 
     ao->dispatch_function = handler;
 
-    ret = xTaskCreate(
-    		ao_task,
-			task_name,
-			AO_TASK_STACK_SIZE,
-            (void*) ao,
-			AO_TASK_PRIORIY,
-            ao->task);
+    ao->task_handle = xTaskCreateStatic(
+                          ao_task,
+                          task_name,
+                          ao->task_stack_size,
+                          (void*) ao,
+                          AO_TASK_PRIORIY,
+                          ao->task_stack,
+                          &ao->task_control_block);
 
-    if(ret != pdPASS) {
+    if(ao->task_handle == NULL) {
     	printf("[AO] Error creating task \"%s\"\n", task_name);
     	return false;
     }
@@ -55,7 +54,6 @@ bool ao_initialize(ActiveObject* const ao, const char* task_name, dispatch_event
     ao->queue = xQueueCreate(AO_QUEUE_LENGTH, sizeof(Event));
     if(ao->queue == NULL) {
     	printf("[AO] Error creating queue for task \"%s\"\n", task_name);
-    	vTaskDelete(*ao->task);
     	return false;
     }
 
@@ -66,7 +64,7 @@ bool ao_initialize(ActiveObject* const ao, const char* task_name, dispatch_event
 bool ao_send_event(ActiveObject* ao, Event* const event)
 {
     if (xQueueSend(ao->queue, (void*)(event), portMAX_DELAY) != pdPASS) {
-        printf("Error sending event to \"%s\" queue\n", pcTaskGetName(*ao->task));
+        printf("Error sending event to \"%s\" queue\n", pcTaskGetName(ao->task_handle));
         return false;
     }
 

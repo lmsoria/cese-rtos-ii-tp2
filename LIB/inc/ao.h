@@ -13,7 +13,10 @@
 typedef struct
 {
     QueueHandle_t queue;                        ///< Event Queue.
-    TaskHandle_t* task;                         ///< Handle of the queue reception task
+    TaskHandle_t task_handle;                         ///< Handle of the queue reception task
+    StaticTask_t task_control_block;
+    StackType_t* task_stack;
+    uint32_t task_stack_size;
     dispatch_event_handler_t dispatch_function; ///< Callback that will be triggered on each event reception.
 } ActiveObject;
 
