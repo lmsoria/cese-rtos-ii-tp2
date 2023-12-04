@@ -1,7 +1,8 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-#include "ao.h"
+#include "event.h"
+
 #include "app.h"
 #include "SVC_led.h"
 #include "SVC_button.h"
@@ -31,13 +32,13 @@ void app_init()
     // Initialize LED Active Object
     if(!svc_led_initialize()) {
     	printf("Error: Couldn't initialize led AO\n");
-    	configASSERT(false);
+    	while(1);
     }
 
     // Initialize button service
     if(!svc_button_initialize()) {
     	printf("Error: Couldn't initialize button service\n");
-    	configASSERT(false);
+    	while(1);
     }
 
 }

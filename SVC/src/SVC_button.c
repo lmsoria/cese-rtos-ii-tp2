@@ -3,6 +3,7 @@
 
 #include "ao.h"
 #include "memory_pool.h"
+
 #include "HAL_button.h"
 #include "SVC_button.h"
 #include "SVC_led.h"
@@ -33,7 +34,7 @@ typedef struct
 #define EVENT_SHORT_THRESHOLD_MIN_MS 100
 #define EVENT_LONG_THRESHOLD_MIN_MS 2000
 #define EVENT_BLOCKED_THRESHOLD_MIN_MS 8000
-#define BUTTON_TASK_STACK_SIZE 200
+#define BUTTON_TASK_STACK_SIZE 128
 #define BUTTON_TASK_PRIORITY (tskIDLE_PRIORITY + 1UL)
 
 /// | Private macro -------------------------------------------------------------
