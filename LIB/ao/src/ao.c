@@ -14,7 +14,7 @@ static void ao_task(void* parameters)
     while (1) {
         if (xQueueReceive(AO->queue_handle, &event, portMAX_DELAY) == pdPASS) {
             if(AO->dispatch_function) {
-            	AO->dispatch_function(event.id, event.opt_data_address);
+            	AO->dispatch_function(&event);
             }
         }
     }
