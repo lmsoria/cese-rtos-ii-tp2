@@ -1,9 +1,9 @@
 // ------ inclusions ---------------------------------------------------
 #include <stdio.h>
 
+#include "ao.h"
 #include "memory_pool.h"
 
-#include "HAL_led.h"
 #include "SVC_led.h"
 
 /// | Private typedef -----------------------------------------------------------
@@ -26,7 +26,12 @@ static StaticQueue_t led_queue_structure;
 /// Storage Area for LED AO's queue
 static uint8_t led_queue_storage[AO_STATIC_QUEUE_STORAGE_AREA];
 
+static ActiveObject ao_led;
+
 extern memory_pool_t* const MEMPOOL;
+
+/// | Exported variables --------------------------------------------------------
+ActiveObject* const AO_LED = &ao_led;
 
 /// | Private function prototypes -----------------------------------------------
 
@@ -36,14 +41,14 @@ static void svc_led_dispatch_event(Event* event);
 
 /// | Private functions ---------------------------------------------------------
 
-bool svc_led_initialize(ActiveObject* const ao, const char* ao_task_name)
+bool svc_led_initialize()
 {
-	ao->task_control_block = led_task_buffer;
-	ao->task_stack = led_task_stack;
-	ao->task_stack_size = LED_TASK_STACK_SIZE;
-	ao->queue_structure = &led_queue_structure;
-	ao->queue_storage_area = led_queue_storage;
-	return ao_initialize(ao, ao_task_name, svc_led_dispatch_event);
+	AO_LED->task_control_block = led_task_buffer;
+	AO_LED->task_stack = led_task_stack;
+	AO_LED->task_stack_size = LED_TASK_STACK_SIZE;
+	AO_LED->queue_structure = &led_queue_structure;
+	AO_LED->queue_storage_area = led_queue_storage;
+	return ao_initialize(AO_LED, "led", svc_led_dispatch_event);
 }
 
 static void svc_led_dispatch_event(Event* event)

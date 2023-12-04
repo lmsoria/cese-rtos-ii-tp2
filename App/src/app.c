@@ -18,7 +18,6 @@
 static memory_pool_t memory_pool;
 static uint8_t memory_pool_area[MEMORY_POOL_SIZE(MEMORY_POOL_NBLOCKS, MEMORY_POOL_BLOCK_SIZE)];
 /// | Exported variables --------------------------------------------------------
-ActiveObject ao_led;
 memory_pool_t* const MEMPOOL = &memory_pool;
 
 /// | Private functions ---------------------------------------------------------
@@ -30,7 +29,7 @@ void app_init()
     memory_pool_init(MEMPOOL, memory_pool_area, MEMORY_POOL_NBLOCKS, MEMORY_POOL_BLOCK_SIZE);
 
     // Initialize LED Active Object
-    if(!svc_led_initialize(&ao_led, "led")) {
+    if(!svc_led_initialize()) {
     	printf("Error: Couldn't initialize led AO\n");
     	configASSERT(false);
     }

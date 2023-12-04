@@ -40,7 +40,7 @@ typedef struct
 
 /// | Private variables ---------------------------------------------------------
 
-extern ActiveObject ao_led;
+extern ActiveObject* const AO_LED;
 extern memory_pool_t* const MEMPOOL;
 
 /// Structure that will hold the TCB of the task being created.
@@ -233,7 +233,7 @@ static void send_event(LEDEventType event_id, ApplicationLEDs led)
     if(event_to_be_sent != NULL) {
 		event_to_be_sent->id = (uint32_t)(event_id);
 		event_to_be_sent->opt_data_address = (void*)(led);
-    	if(!ao_send_event(&ao_led, event_to_be_sent)) {
+    	if(!ao_send_event(AO_LED, event_to_be_sent)) {
     		printf("[%s] Error sending event to the queue\n", pcTaskGetName(NULL));
     		memory_pool_block_put(MEMPOOL, (void*)event_to_be_sent);
     	}

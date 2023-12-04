@@ -2,7 +2,6 @@
 
 #include <stdbool.h>
 
-#include "ao.h"
 #include "HAL_led.h"
 
 /// @brief Type of events handled by the LED AO
@@ -23,4 +22,4 @@ typedef enum
 /// @brief Initialize the LED Active Object. By default This function will assign `task_led()` to the task field
 /// @param ao Active Object to initialize
 /// @param ao_task_name Name for the task
-bool svc_led_initialize(ActiveObject* const ao, const char* ao_task_name);
+bool svc_led_initialize();
