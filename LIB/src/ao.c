@@ -2,8 +2,6 @@
 
 #include "ao.h"
 
-#define AO_QUEUE_LENGTH 16
-#define AO_TASK_STACK_SIZE (2 * configMINIMAL_STACK_SIZE)
 #define AO_TASK_PRIORIY (tskIDLE_PRIORITY + 1UL)
 
 static void ao_task(void* parameters)
@@ -14,7 +12,7 @@ static void ao_task(void* parameters)
     printf("[%s] Task Running\n", pcTaskGetName(NULL));
 
     while (1) {
-        if (xQueueReceive(AO->queue, &event, portMAX_DELAY) == pdPASS) {
+        if (xQueueReceive(AO->queue_handle, &event, portMAX_DELAY) == pdPASS) {
             if(AO->dispatch_function) {
             	AO->dispatch_function(event.id, event.opt_data_address);
             }
@@ -51,8 +49,13 @@ bool ao_initialize(ActiveObject* const ao, const char* task_name, dispatch_event
     	return false;
     }
 
-    ao->queue = xQueueCreate(AO_QUEUE_LENGTH, sizeof(Event));
-    if(ao->queue == NULL) {
+    ao->queue_handle = xQueueCreateStatic(
+    		AO_QUEUE_LENGHT,
+			sizeof(Event),
+			ao->queue_storage_area,
+			ao->queue_structure);
+
+    if(ao->queue_handle == NULL) {
     	printf("[AO] Error creating queue for task \"%s\"\n", task_name);
     	return false;
     }
@@ -63,7 +66,7 @@ bool ao_initialize(ActiveObject* const ao, const char* task_name, dispatch_event
 
 bool ao_send_event(ActiveObject* ao, Event* const event)
 {
-    if (xQueueSend(ao->queue, (void*)(event), portMAX_DELAY) != pdPASS) {
+    if (xQueueSend(ao->queue_handle, (void*)(event), portMAX_DELAY) != pdPASS) {
         printf("Error sending event to \"%s\" queue\n", pcTaskGetName(ao->task_handle));
         return false;
     }

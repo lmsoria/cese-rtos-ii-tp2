@@ -9,14 +9,23 @@
 
 #include "event.h"
 
+#define AO_QUEUE_LENGHT 16
+#define AO_STATIC_QUEUE_STORAGE_AREA AO_QUEUE_LENGHT * sizeof(Event)
+
 /// @brief Active Object struct, which consists of an event queue and a task that will process them.
 typedef struct
 {
-    QueueHandle_t queue;                        ///< Event Queue.
-    TaskHandle_t task_handle;                         ///< Handle of the queue reception task
-    StaticTask_t task_control_block;
-    StackType_t* task_stack;
-    uint32_t task_stack_size;
+
+	// Queue section
+	QueueHandle_t queue_handle;
+	StaticQueue_t* queue_structure;             ///< Event Queue.
+	uint8_t* queue_storage_area;                ///<
+	// Task section
+    TaskHandle_t task_handle;                   ///< Handle of the queue reception task
+    StaticTask_t task_control_block;            ///<
+    StackType_t* task_stack;                    ///<
+    uint32_t task_stack_size;                   ///<
+    // Dispatch section
     dispatch_event_handler_t dispatch_function; ///< Callback that will be triggered on each event reception.
 } ActiveObject;
 
