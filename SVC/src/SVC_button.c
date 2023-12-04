@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "ao.h"
+#include "memory_pool.h"
 #include "HAL_button.h"
 #include "SVC_button.h"
 #include "SVC_led.h"
@@ -40,6 +41,7 @@ typedef struct
 /// | Private variables ---------------------------------------------------------
 
 extern ActiveObject ao_led;
+extern memory_pool_t* const MEMPOOL;
 
 /// Structure that will hold the TCB of the task being created.
 static StaticTask_t button_task_buffer;
@@ -61,6 +63,8 @@ static void process_button_pressed_state(ButtonEvent* const current_event, const
 ///        Use this function to propagate events to other actors.
 /// @param current_event current ButtonEvent. The function won't modify its content.
 static void process_button_released_state(ButtonEvent* const current_event);
+
+static void send_event(LEDEventType event_id, ApplicationLEDs led);
 
 /// | Private functions ---------------------------------------------------------
 
@@ -167,41 +171,34 @@ static void process_button_pressed_state(ButtonEvent* const current_event, const
     // when there is a difference with the previous one.
     if (new_event != *current_event) {
         *current_event = new_event;
-        Event event_to_be_sent;
 
         switch (*current_event) {
         case EVENT_SHORT:
             printf("[%s] Detected SHORT press\n", BUTTON_TASK_NAME);
-            event_to_be_sent.id = (uint32_t)(LED_EVENT_TOGGLE);
-            event_to_be_sent.opt_data_address = (void*)(LED_GREEN);
-            ao_send_event(&ao_led, &event_to_be_sent);
+            send_event(LED_EVENT_TOGGLE, LED_GREEN);
             break;
 
         case EVENT_LONG:
-            printf("[%s] Detected LONG press\n", BUTTON_TASK_NAME);
-            event_to_be_sent.id = (uint32_t)(LED_EVENT_TOGGLE);
-            event_to_be_sent.opt_data_address = (void*)(LED_RED);
-            ao_send_event(&ao_led, &event_to_be_sent);
+        	printf("[%s] Detected LONG press\n", BUTTON_TASK_NAME);
+        	send_event(LED_EVENT_TOGGLE, LED_RED);
             break;
 
         case EVENT_BLOCKED:
             printf("[%s] Detected BLOCKED press\n", BUTTON_TASK_NAME);
-            event_to_be_sent.id = (uint32_t)(LED_EVENT_ON);
-            event_to_be_sent.opt_data_address = (void*)(LED_GREEN);
-            ao_send_event(&ao_led, &event_to_be_sent);
-            event_to_be_sent.opt_data_address = (void*)(LED_RED);
-            ao_send_event(&ao_led, &event_to_be_sent);
+            send_event(LED_EVENT_ON, LED_GREEN);
+            send_event(LED_EVENT_ON, LED_RED);
             break;
 
         default:
-            break;
+            return;
         }
+
+
     }
 }
 
 static void process_button_released_state(ButtonEvent* const current_event)
 {
-	Event event_to_be_sent;
     printf("[%s] Button Released\n", pcTaskGetName(NULL));
 
     switch (*current_event) {
@@ -213,14 +210,28 @@ static void process_button_released_state(ButtonEvent* const current_event)
 
     case EVENT_BLOCKED:
         // As per design, only turn off the LEDs when the current state is BLOCKED
-        event_to_be_sent.id = (uint32_t)(LED_EVENT_OFF);
-        event_to_be_sent.opt_data_address = (void*)(LED_GREEN);
-        ao_send_event(&ao_led, &event_to_be_sent);
-        event_to_be_sent.opt_data_address = (void*)(LED_RED);
-        ao_send_event(&ao_led, &event_to_be_sent);
+        send_event(LED_EVENT_OFF, LED_GREEN);
+        send_event(LED_EVENT_OFF, LED_RED);
         break;
 
     default:
         break;
+    }
+}
+
+static void send_event(LEDEventType event_id, ApplicationLEDs led)
+{
+	Event* event_to_be_sent = NULL;
+
+    event_to_be_sent = (Event*)memory_pool_block_get(MEMPOOL);
+    if(event_to_be_sent != NULL) {
+		event_to_be_sent->id = (uint32_t)(event_id);
+		event_to_be_sent->opt_data_address = (void*)(led);
+    	if(!ao_send_event(&ao_led, event_to_be_sent)) {
+    		printf("[%s] Error sending event to the queue\n", pcTaskGetName(NULL));
+    		memory_pool_block_put(MEMPOOL, (void*)event_to_be_sent);
+    	}
+    } else {
+    	printf("[%s] Error: Cannot allocate more events\n", pcTaskGetName(NULL));
     }
 }

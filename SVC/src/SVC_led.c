@@ -1,7 +1,7 @@
 // ------ inclusions ---------------------------------------------------
 #include <stdio.h>
 
-#include "app_resources.h"
+#include "memory_pool.h"
 
 #include "HAL_led.h"
 #include "SVC_led.h"
@@ -25,6 +25,8 @@ static StaticQueue_t led_queue_structure;
 
 /// Storage Area for LED AO's queue
 static uint8_t led_queue_storage[AO_STATIC_QUEUE_STORAGE_AREA];
+
+extern memory_pool_t* const MEMPOOL;
 
 /// | Private function prototypes -----------------------------------------------
 
@@ -66,4 +68,6 @@ static void svc_led_dispatch_event(Event* event)
         configASSERT(pdFAIL && "Invalid LED event");
         break;
     }
+
+    memory_pool_block_put(MEMPOOL, (void*)event);
 }
