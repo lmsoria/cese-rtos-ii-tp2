@@ -1,9 +1,8 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+#include "ao.h"
 #include "app.h"
-#include "app_resources.h"
-
 #include "SVC_led.h"
 #include "SVC_button.h"
 
@@ -13,7 +12,7 @@
 /// | Private function prototypes -----------------------------------------------
 /// | Private variables ---------------------------------------------------------
 /// | Exported variables --------------------------------------------------------
-LEDActiveObject ao_led;
+ActiveObject ao_led;
 
 /// | Private functions ---------------------------------------------------------
 
@@ -22,7 +21,10 @@ void app_init()
     printf("Main application starts here\n");
 
     // Initialize LED Active Object
-    led_initialize_ao(&ao_led, "ao_led");
+    if(!svc_led_initialize(&ao_led, "led")) {
+    	printf("Error: Couldn't initialize led AO\n");
+    	configASSERT(false);
+    }
 
     // Initialize button service
     if(!svc_button_initialize()) {

@@ -1,8 +1,8 @@
 // ------ inclusions ---------------------------------------------------
 #include <stdio.h>
 
+#include "ao.h"
 #include "HAL_button.h"
-
 #include "SVC_button.h"
 #include "SVC_led.h"
 
@@ -39,7 +39,7 @@ typedef struct
 
 /// | Private variables ---------------------------------------------------------
 
-extern LEDActiveObject ao_led;
+extern ActiveObject ao_led;
 
 /// Structure that will hold the TCB of the task being created.
 static StaticTask_t button_task_buffer;
@@ -167,40 +167,30 @@ static void process_button_pressed_state(ButtonEvent* const current_event, const
     // when there is a difference with the previous one.
     if (new_event != *current_event) {
         *current_event = new_event;
-        LEDEvent* event_to_be_sent = NULL;
+        Event event_to_be_sent;
 
         switch (*current_event) {
         case EVENT_SHORT:
             printf("[%s] Detected SHORT press\n", BUTTON_TASK_NAME);
-            event_to_be_sent = pvPortMalloc(sizeof(LEDEvent));
-            configASSERT(event_to_be_sent);
-            event_to_be_sent->type = LED_EVENT_TOGGLE;
-            event_to_be_sent->led = LED_GREEN;
-            led_ao_send_event(&ao_led, event_to_be_sent);
+            event_to_be_sent.id = (uint32_t)(LED_EVENT_TOGGLE);
+            event_to_be_sent.opt_data_address = (void*)(LED_GREEN);
+            ao_send_event(&ao_led, &event_to_be_sent);
             break;
 
         case EVENT_LONG:
             printf("[%s] Detected LONG press\n", BUTTON_TASK_NAME);
-            event_to_be_sent = pvPortMalloc(sizeof(LEDEvent));
-            configASSERT(event_to_be_sent);
-            event_to_be_sent->type = LED_EVENT_TOGGLE;
-            event_to_be_sent->led = LED_RED;
-            led_ao_send_event(&ao_led, event_to_be_sent);
+            event_to_be_sent.id = (uint32_t)(LED_EVENT_TOGGLE);
+            event_to_be_sent.opt_data_address = (void*)(LED_RED);
+            ao_send_event(&ao_led, &event_to_be_sent);
             break;
 
         case EVENT_BLOCKED:
             printf("[%s] Detected BLOCKED press\n", BUTTON_TASK_NAME);
-            event_to_be_sent = pvPortMalloc(sizeof(LEDEvent));
-            configASSERT(event_to_be_sent);
-            event_to_be_sent->type = LED_EVENT_ON;
-            event_to_be_sent->led = LED_RED;
-            led_ao_send_event(&ao_led, event_to_be_sent);
-
-            event_to_be_sent = pvPortMalloc(sizeof(LEDEvent));
-            configASSERT(event_to_be_sent);
-            event_to_be_sent->type = LED_EVENT_ON;
-            event_to_be_sent->led = LED_GREEN;
-            led_ao_send_event(&ao_led, event_to_be_sent);
+            event_to_be_sent.id = (uint32_t)(LED_EVENT_ON);
+            event_to_be_sent.opt_data_address = (void*)(LED_GREEN);
+            ao_send_event(&ao_led, &event_to_be_sent);
+            event_to_be_sent.opt_data_address = (void*)(LED_RED);
+            ao_send_event(&ao_led, &event_to_be_sent);
             break;
 
         default:
@@ -211,7 +201,7 @@ static void process_button_pressed_state(ButtonEvent* const current_event, const
 
 static void process_button_released_state(ButtonEvent* const current_event)
 {
-	LEDEvent* event_to_be_sent = NULL;
+	Event event_to_be_sent;
     printf("[%s] Button Released\n", pcTaskGetName(NULL));
 
     switch (*current_event) {
@@ -223,17 +213,11 @@ static void process_button_released_state(ButtonEvent* const current_event)
 
     case EVENT_BLOCKED:
         // As per design, only turn off the LEDs when the current state is BLOCKED
-    	event_to_be_sent = pvPortMalloc(sizeof(LEDEvent));
-    	configASSERT(event_to_be_sent);
-        event_to_be_sent->type = LED_EVENT_OFF;
-        event_to_be_sent->led = LED_RED;
-        led_ao_send_event(&ao_led, event_to_be_sent);
-
-    	event_to_be_sent = pvPortMalloc(sizeof(LEDEvent));
-    	configASSERT(event_to_be_sent);
-        event_to_be_sent->type = LED_EVENT_OFF;
-        event_to_be_sent->led = LED_GREEN;
-        led_ao_send_event(&ao_led, event_to_be_sent);
+        event_to_be_sent.id = (uint32_t)(LED_EVENT_OFF);
+        event_to_be_sent.opt_data_address = (void*)(LED_GREEN);
+        ao_send_event(&ao_led, &event_to_be_sent);
+        event_to_be_sent.opt_data_address = (void*)(LED_RED);
+        ao_send_event(&ao_led, &event_to_be_sent);
         break;
 
     default:

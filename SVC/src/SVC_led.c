@@ -8,60 +8,27 @@
 
 /// | Private typedef -----------------------------------------------------------
 /// | Private define ------------------------------------------------------------
-
-#define LED_AO_QUEUE_LENGTH 16
-
 /// | Private macro -------------------------------------------------------------
 /// | Private variables ---------------------------------------------------------
 /// | Private function prototypes -----------------------------------------------
 
 /// @brief Process events received on the AO queue
 /// @param event
-static void execute_event(const LEDEvent* const event);
-
-/// @brief LED Active object task.
-/// @param parameters should be a reference to the AO.
-static void ao_led_task(void* parameters);
+static void svc_led_dispatch_event(uint32_t event_type, void* target_led);
 
 /// | Private functions ---------------------------------------------------------
-static void ao_led_task(void* parameters)
+
+bool svc_led_initialize(ActiveObject* const ao, const char* ao_task_name)
 {
-    LEDActiveObject* const AO = (LEDActiveObject*) (parameters);
-
-    LEDEvent* event = NULL;
-    printf("[%s] Task Created\n", pcTaskGetName(NULL));
-
-    while (1) {
-        if (xQueueReceive(AO->queue, &event, portMAX_DELAY) == pdPASS && event) {
-            execute_event(event);
-        	vPortFree(event);
-        }
-    }
+	return ao_initialize(ao, ao_task_name, svc_led_dispatch_event);
 }
 
-void led_initialize_ao(LEDActiveObject* ao, const char* ao_task_name)
-{
-    BaseType_t ret;
-
-    ret = xTaskCreate(
-            ao_led_task,
-            ao_task_name,
-            (2 * configMINIMAL_STACK_SIZE),
-            (void*) ao,
-            (tskIDLE_PRIORITY + 1UL),
-            ao->task);
-    configASSERT(ret == pdPASS);
-
-    ao->queue = xQueueCreate(LED_AO_QUEUE_LENGTH, sizeof(LEDEvent*));
-    configASSERT(ao->queue);
-}
-
-static void execute_event(const LEDEvent* const event)
+static void svc_led_dispatch_event(uint32_t event_type, void* target_led)
 {
     printf("[%s] Event Received: ", pcTaskGetName(NULL));
-    const BoardLEDs LED = event->led;
+    const ApplicationLEDs LED = (ApplicationLEDs)(target_led);
 
-    switch (event->type) {
+    switch ((LEDEventType)(event_type)) {
     case LED_EVENT_ON:
         printf("LED_EVENT_ON\n");
         led_set(LED);
@@ -77,12 +44,5 @@ static void execute_event(const LEDEvent* const event)
     default:
         configASSERT(pdFAIL && "Invalid LED event");
         break;
-    }
-}
-
-void led_ao_send_event(LEDActiveObject* ao, LEDEvent* const event)
-{
-    if (xQueueSend(ao->queue, (void*)(&event), portMAX_DELAY) != pdPASS) {
-        printf("Error sending LED event\n");
     }
 }
