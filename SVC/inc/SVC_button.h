@@ -10,3 +10,5 @@ typedef enum
 } ButtonEvent;
 
 void task_button(void* parameters);
+
+void svc_button_initialize();

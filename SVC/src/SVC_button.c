@@ -3,6 +3,8 @@
 
 #include "app_resources.h"
 
+#include "HAL_button.h"
+
 #include "SVC_button.h"
 #include "SVC_led.h"
 
@@ -54,11 +56,9 @@ static void process_button_released_state(ButtonEvent* const current_event);
 /// | Private functions ---------------------------------------------------------
 void task_button(void* parameters)
 {
-    ButtonTaskData* const DATA = (ButtonTaskData*) (parameters);
-
     Debouncer debouncer =
     {
-        .button = DATA->button,
+        .button = USER_BUTTON,
         .state = DEBOUNCER_STATE_WAIT_PRESS,
         .timer_debounce = 0,
         .timer_up = 0,
