@@ -32,11 +32,20 @@ typedef struct
 #define EVENT_SHORT_THRESHOLD_MIN_MS 100
 #define EVENT_LONG_THRESHOLD_MIN_MS 2000
 #define EVENT_BLOCKED_THRESHOLD_MIN_MS 8000
+#define BUTTON_TASK_STACK_SIZE 200
+#define BUTTON_TASK_PRIORITY (tskIDLE_PRIORITY + 1UL)
 
 /// | Private macro -------------------------------------------------------------
 
 /// | Private variables ---------------------------------------------------------
+
 extern LEDActiveObject ao_led;
+
+/// Structure that will hold the TCB of the task being created.
+static StaticTask_t button_task_buffer;
+
+///Buffer that the task being created will use as its stack.
+static StackType_t button_task_stack[BUTTON_TASK_STACK_SIZE];
 
 /// | Private function prototypes -----------------------------------------------
 
@@ -57,17 +66,17 @@ static void process_button_released_state(ButtonEvent* const current_event);
 
 bool svc_button_initialize()
 {
-	BaseType_t ret = pdFALSE;
-    // Create button task
-    ret = xTaskCreate(
-            task_button,
-            "button",
-            (2 * configMINIMAL_STACK_SIZE),
-            NULL,
-            (tskIDLE_PRIORITY + 1UL),
-            NULL);
+    // Create the button task without using any dynamic memory allocation.
+	TaskHandle_t xHandle = xTaskCreateStatic(
+								task_button,
+								"button",
+								BUTTON_TASK_STACK_SIZE,
+								NULL,
+								BUTTON_TASK_PRIORITY,
+								button_task_stack,
+								&button_task_buffer);
 
-    return (ret == pdTRUE);
+    return (xHandle != NULL);
 }
 
 void task_button(void* unused)
