@@ -73,6 +73,8 @@ void memory_pool_init(memory_pool_t* hmp, void* pmemory, size_t nblocks, size_t 
     linked_list_node_init((memory_pool_block_t*)pblock, NULL);
     linked_list_node_add(hlist, pblock);
   }
+
+  printf("[memory] Initialized memory pool of %d elements of size %d bytes\n", nblocks, block_size);
 }
 
 void* memory_pool_block_get(memory_pool_t* hmp)

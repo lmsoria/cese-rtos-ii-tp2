@@ -95,7 +95,7 @@ void task_button(void* unused)
 
     ButtonEvent current_event = EVENT_INITIAL;
 
-    printf("[%s] Task Created\n", pcTaskGetName(NULL));
+    printf("[%s] Task Running\n", pcTaskGetName(NULL));
 
     // Basic flow:
     // 1. Read button
