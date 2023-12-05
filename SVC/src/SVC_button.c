@@ -54,7 +54,7 @@ static StackType_t button_task_stack[BUTTON_TASK_STACK_SIZE];
 
 /// @brief Button task. It will monitor the button every ms.
 /// @param unused
-static void task_button(void* unused);
+static void button_task(void* unused);
 
 /// @brief Process the "button pressed" action, which happens whenever the Debouncer is at DEBOUNCER_STATE_WAIT_RELEASE state.
 ///        Use this function to propagate events to other actors.
@@ -79,7 +79,7 @@ bool svc_button_initialize()
 {
     // Create the button task without using any dynamic memory allocation.
 	TaskHandle_t xHandle = xTaskCreateStatic(
-								task_button,
+								button_task,
 								"button",
 								BUTTON_TASK_STACK_SIZE,
 								NULL,
@@ -90,7 +90,7 @@ bool svc_button_initialize()
     return (xHandle != NULL);
 }
 
-void task_button(void* unused)
+void button_task(void* unused)
 {
     Debouncer debouncer =
     {
