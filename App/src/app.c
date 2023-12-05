@@ -29,9 +29,9 @@ void app_init()
 
     memory_pool_init(MEMPOOL, memory_pool_area, MEMORY_POOL_NBLOCKS, MEMORY_POOL_BLOCK_SIZE);
 
-    // Initialize LED Active Object
+    // Initialize led service
     if(!svc_led_initialize()) {
-    	printf("Error: Couldn't initialize led AO\n");
+    	printf("Error: Couldn't initialize led service\n");
     	while(1);
     }
 
